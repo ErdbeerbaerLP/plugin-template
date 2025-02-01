@@ -1,5 +1,7 @@
 
-
+import { FluxDispatcher } from '@vendetta/metro/common';
+import { before, } from "@vendetta/patcher"
+import { logger } from "@vendetta"
 const pluginName = "ForwardReImplementation";
 
 function constructMessage(message, channel) {
@@ -41,7 +43,7 @@ const startPlugin = () => {
     try {
         // Main patch
         const patch1 = (
-            vendetta.patcher.before("dispatch", vendetta.metro.common.FluxDispatcher, ([event]) => {
+            before("dispatch", FluxDispatcher, ([event]) => {
                 // Reconstruct forwarded message on channel load
                 if (event.type === "LOAD_MESSAGES_SUCCESS") {
                     event.messages.forEach(msg => {
@@ -49,7 +51,7 @@ const startPlugin = () => {
                             //msg.content = JSON.stringify(msg);//msg.message_snapshots[0].message;
                             Object.assign(msg, msg.message_snapshots[0].message);
                             delete msg.message_snapshots;
-                            msg.content = msg.content + "(Forwarded from \nhttps://discord.com/channels/" + msg.message_reference.guild_id + "/" + msg.message_reference.channel_id + "/" + msg.message_reference.message_id + ")";
+                            msg.content = msg.content + "\n*(Forwarded from \nhttps://discord.com/channels/" + msg.message_reference.guild_id + "/" + msg.message_reference.channel_id + "/" + msg.message_reference.message_id + ")*";
                         }
                     });
                 }
@@ -59,28 +61,28 @@ const startPlugin = () => {
                         //event.message.content = event.message.message_snapshots[0].message.content;
                         Object.assign(event.message, event.message.message_snapshots[0].message);
                         delete event.message.message_snapshots;
-                        event.message.content = event.message.content + "(Forwarded from \nhttps://discord.com/channels/" + event.message.message_reference.guild_id + "/" + event.message.message_reference.channel_id + "/" + event.message.message_reference.message_id + ")";
+                        event.message.content = event.message.content + "\n*(Forwarded from \nhttps://discord.com/channels/" + event.message.message_reference.guild_id + "/" + event.message.message_reference.channel_id + "/" + event.message.message_reference.message_id + ")*";
                     }
                 }
             })
         );
         patches.push(patch1);
 
-        vendetta.logger.log(`${pluginName} loaded.`);
+        logger.log(`${pluginName} loaded.`);
         return null;
     } catch (err) {
-        vendetta.logger.log(`[${pluginName} Error]`, err);
+        logger.log(`[${pluginName} Error]`, err);
     };
 }
 
 // Load Plugin
 const onLoad = () => {
-    vendetta.logger.log(`Loading ${pluginName}...`);
+    logger.log(`Loading ${pluginName}...`);
 
     // Dispatch with a fake event to enable the action handlers from first loadup
     for (let type of ["MESSAGE_CREATE", "MESSAGE_UPDATE"]) {
-        vendetta.logger.log(`Dispatching ${type} to enable action handler.`);
-        vendetta.metro.common.FluxDispatcher.dispatch({
+        logger.log(`Dispatching ${type} to enable action handler.`);
+        FluxDispatcher.dispatch({
             type: type,
             message: constructMessage('PLACEHOLDER', { id: '0' }),
         });
@@ -88,8 +90,8 @@ const onLoad = () => {
 
     // Dispatch with a fake event to enable the action handlers from first loadup
     for (let type of ["LOAD_MESSAGES", "LOAD_MESSAGES_SUCCESS"]) {
-        vendetta.logger.log(`Dispatching ${type} to enable action handler.`);
-        vendetta.metro.common.FluxDispatcher.dispatch({
+        logger.log(`Dispatching ${type} to enable action handler.`);
+        FluxDispatcher.dispatch({
             type: type,
             messages: [],
         });
@@ -103,10 +105,10 @@ onLoad();
 export default {
     onLoad,
     onUnload: () => {
-        vendetta.logger.log(`Unloading ${pluginName}...`);
+        logger.log(`Unloading ${pluginName}...`);
         for (let unpatch of patches) {
             unpatch();
         };
-        vendetta.logger.log(`${pluginName} unloaded.`);
+        logger.log(`${pluginName} unloaded.`);
     }
 };
