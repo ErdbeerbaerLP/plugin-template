@@ -42,7 +42,7 @@ const startPlugin = () => {
         // Main patch
         const patch1 = (
             vendetta.patcher.before("dispatch", vendetta.metro.common.FluxDispatcher, ([event]) => {
-                // Hides blocked messages on channel loads
+                // Reconstruct forwarded message on channel load
                 if (event.type === "LOAD_MESSAGES_SUCCESS") {
                     event.messages.forEach(msg => {
                         if (Array.isArray(msg.message_snapshots) && msg.message_snapshots.length) {
@@ -53,7 +53,7 @@ const startPlugin = () => {
                         }
                     });
                 }
-                // Hides blocked messages on message creation/update
+                // Reconstruct forwarded message on message creation/update
                 if (event.type === "MESSAGE_CREATE" || event.type === "MESSAGE_UPDATE") {
                     if (Array.isArray(event.message.message_snapshots) && event.message.message_snapshots.length) {
                         //event.message.content = event.message.message_snapshots[0].message.content;
