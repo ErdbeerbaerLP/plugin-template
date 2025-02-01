@@ -1,10 +1,10 @@
 {
-    "name": "Template Plugin",
-    "description": "A plugin for use as a template.",
+    "name": "ForwardReImplementation",
+    "description": "A plugin to re-implement forwarded messages to older vendetta clients",
     "authors": [
         {
-            "name": "You!",
-            "id": "YOUR_ID_HERE"
+            "name": "ErdbeerbaerLP",
+            "id": "135802962013454336"
         }
     ],
     "main": "src/index.ts",
